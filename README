@@ -1,0 +1,45 @@
+# Tibia Inspired Idle Adventure
+
+## Descrição
+Este é um jogo de aventura ociosa inspirado no Tibia, desenvolvido em **HTML, CSS e JavaScript**. O jogo permite que os jogadores criem personagens, explorem diferentes áreas, enfrentem monstros, adquiram itens e melhorem suas habilidades.
+
+---
+
+## Estrutura do Projeto
+O projeto consiste em um único arquivo HTML que contém todo o código necessário para o jogo:
+
+- **RPG.html**: Contém o código **HTML, CSS e JavaScript** para o jogo.
+
+---
+
+## Funcionalidades
+
+- **Criação de Personagem**: Os jogadores podem criar um personagem escolhendo um nome e uma classe.
+- **Inventário**: Os jogadores podem visualizar e gerenciar seus itens no inventário.
+- **Equipamento**: Os jogadores podem equipar e desequipar itens.
+- **Caça**: Os jogadores podem caçar monstros para ganhar experiência e ouro.
+- **Mercado**: Os jogadores podem comprar itens no mercado.
+- **Taverna**: Os jogadores podem descansar na taverna para recuperar saúde.
+- **Bestiário**: Os jogadores podem visualizar informações sobre os monstros que derrotaram.
+- **Loja de Magia**: Os jogadores podem comprar e visualizar feitiços.
+
+---
+
+## Como Jogar
+1. Abra o arquivo **RPG.html** em um navegador web.
+2. Na tela inicial, clique em **"Create Character"** para criar um novo personagem.
+3. Preencha o nome do personagem e selecione uma classe.
+4. Clique em **"Create Character"** para finalizar a criação do personagem.
+5. Use o menu lateral para navegar entre as diferentes áreas do jogo:
+   - **Inventory**: Visualize e gerencie seus itens. (Equipe os itens para o personagem conseguir caçar)
+   - **Character**: Visualize informações sobre seu personagem.
+   - **Hunt**: Enfrente monstros para ganhar experiência e ouro.
+   - **Quests**: Visualize suas missões.
+   - **Guild**: Gerencie sua guilda (*em desenvolvimento*).
+   - **Market**: Compre itens no mercado.
+   - **Tavern**: Descanse na taverna para recuperar saúde.
+   - **Spells**: Visualize seus feitiços adquiridos.
+   - **Magic Store**: Compre novos feitiços.
+   - **Bestiary**: Visualize informações sobre os monstros que derrotou.
+
+---
