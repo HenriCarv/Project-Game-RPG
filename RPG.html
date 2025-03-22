@@ -1116,6 +1116,7 @@
                             character.exp += huntingMonster.exp;
                             character.gold += huntingMonster.gold;
                             logAction(`You defeated ${huntingMonster.name}! Gained ${huntingMonster.exp} exp and ${huntingMonster.gold} gold.`);
+                            updateQuestProgress(huntingMonster.name);
 
                             if (!character.bestiary[huntingMonster.name]) {
                                 character.bestiary[huntingMonster.name] = {
@@ -1134,6 +1135,21 @@
                     } else {
                         const monsterDamage = Math.floor(Math.random() * 3);
                         character.health -= monsterDamage;
+
+                        // Increase shield skill experience if a shield is equipped
+                        const equippedShield = character.equipped.find(item => item.type === 'shield');
+                        if (equippedShield && character.skills.shield) {
+                            character.skills.shield.exp += 1;
+
+                            // Check if shield skill experience reaches the maximum
+                            if (character.skills.shield.exp >= character.skills.shield.maxExp) {
+                                character.skills.shield.level += 1;
+                                character.skills.shield.exp = 0;
+                                character.skills.shield.maxExp = character.skills.shield.level * 10;
+                                logAction(`Your shield skill has increased to level ${character.skills.shield.level}!`);
+                            }
+                        }
+
                         logAction(`${huntingMonster.name}: caused damage ${monsterDamage}.`);
 
                         if (character.health <= character.maxHealth * 0.5) {
@@ -1207,7 +1223,6 @@
                     }
                 });
 
-                logAction("Dano total calculado:", totalDamage);
                 return totalDamage;
             }
 
@@ -1232,17 +1247,37 @@
             // Function to show quest information
             function showQuests() {
                 const contentArea = document.getElementById("content-area");
-                contentArea.innerHTML = "<h2>Quests</h2>";
-                character.quests.forEach(quest => {
-                    if (quest.completed) {
-                        contentArea.innerHTML += `<p>${quest.name} - Completed</p>`;
-                    } else if (quest.progress !== undefined) {
-                        contentArea.innerHTML += `<p>${quest.name} - Progress: ${quest.progress}/${quest.total}</p>`;
-                    } else {
-                        contentArea.innerHTML += `<p>${quest.name} - ${quest.description}</p>`;
-                    }
+                contentArea.innerHTML = `
+        <h2>Quests</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Progress</th>
+                    <th>Reward</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="quest-list"></tbody>
+        </table>
+    `;
+
+                const questList = document.getElementById("quest-list");
+                availableQuests.forEach(quest => {
+                    questList.innerHTML += `
+            <tr>
+                <td>${quest.description}</td>
+                <td>${quest.progress}/${quest.killCount}</td>
+                <td>${quest.rewardGold} Gold, ${quest.rewardExp} Exp</td>
+                <td>
+                    ${quest.completed ? '<span style="color: green;">Completed</span>' : 
+                    (activeQuest === quest.id ? '<span>Active</span>' : `<button onclick="acceptQuest(${quest.id})" ${activeQuest !== null ? 'disabled' : ''}>Accept</button>`)}
+                </td>
+            </tr>
+        `;
                 });
-                logAction("You checked your quest log.");
+
+                logAction("You checked the available quests.");
             }
 
             // Function to show guild information
@@ -1492,8 +1527,90 @@
                 logAction("You are viewing your acquired spells.");
             }
 
+            // Add a quest system
+            let availableQuests = [];
+            let activeQuest = null;
+
+            function generateQuests() {
+                availableQuests = [];
+                const questCount = 3; // Number of quests to generate
+                for (let i = 0; i < questCount; i++) {
+                    const randomMonster = monsters[Math.floor(Math.random() * monsters.length)];
+                    const killCount = Math.floor(Math.random() * 5) + 5; // Random kill count between 5 and 10
+                    const rewardGold = randomMonster.gold * killCount;
+                    const rewardExp = randomMonster.exp * killCount;
+
+                    availableQuests.push({
+                        id: i,
+                        description: `Kill ${killCount} ${randomMonster.name}(s)`,
+                        target: randomMonster.name,
+                        killCount,
+                        progress: 0,
+                        rewardGold,
+                        rewardExp,
+                        completed: false
+                    });
+                }
+            }
+
+            function acceptQuest(questId) {
+                if (activeQuest !== null) {
+                    logAction("You can only accept one quest at a time.");
+                    return;
+                }
+
+                const quest = availableQuests.find(q => q.id === questId);
+                if (quest) {
+                    quest.accepted = true;
+                    activeQuest = quest.id;
+                    logAction(`You accepted the quest: ${quest.description}`);
+                    showQuests();
+                }
+            }
+
+            function updateQuestProgress(monsterName) {
+                const quest = availableQuests.find(q => q.id === activeQuest);
+                if (quest && quest.accepted && !quest.completed && quest.target === monsterName) {
+                    quest.progress++;
+                    if (quest.progress >= quest.killCount) {
+                        quest.completed = true;
+                        character.gold += quest.rewardGold;
+                        character.exp += quest.rewardExp;
+                        logAction(`%cQuest completed: ${quest.description}!`, "color: green;");
+                        checkLevelUp();
+
+                        // Replace the completed quest after 15 seconds
+                        setTimeout(() => {
+                            const index = availableQuests.findIndex(q => q.id === quest.id);
+                            if (index !== -1) {
+                                const randomMonster = monsters[Math.floor(Math.random() * monsters.length)];
+                                const killCount = Math.floor(Math.random() * 5) + 5;
+                                const rewardGold = randomMonster.gold * killCount;
+                                const rewardExp = randomMonster.exp * killCount;
+
+                                availableQuests[index] = {
+                                    id: quest.id,
+                                    description: `Kill ${killCount} ${randomMonster.name}(s)`,
+                                    target: randomMonster.name,
+                                    killCount,
+                                    progress: 0,
+                                    rewardGold,
+                                    rewardExp,
+                                    completed: false
+                                };
+                                activeQuest = null;
+                                showQuests();
+                            }
+                        }, 15000);
+                    }
+                }
+            }
+
+            // Generate quests when the game initializes
+            generateQuests();
+
             // Initialize the game
-            logAction("Welcome to Tibia Inspired Idle Adventure! Use the menu to navigate through different game areas.");
+            logAction("Welcome  Idle Adventure! Use the menu to navigate through different game areas.");
             updateLateralMenu();
 
             // Add touch event listeners for mobile devices
